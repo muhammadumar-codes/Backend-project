@@ -1,10 +1,8 @@
-const bcrpytjs = require('bcryptjs')
+const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 // ===*Users And Registers From The Data File *===
 const { users, registerUsers, loginUser } = require('../data/users')
-
-const bcrypt = require('bcrypt')
 
 // ===*GET ALL USERS*===
 
@@ -143,7 +141,7 @@ const registrationForm = async (req, res) => {
     // ===*NEW USERS*===
 
     const newUser = {
-      id: users.length + 1,
+      id: registerUsers.length + 1,
       name,
       email,
       hashPassword,
@@ -158,7 +156,6 @@ const registrationForm = async (req, res) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
-        password: newUser.hashPassword,
       },
     })
 
@@ -172,6 +169,7 @@ const registrationForm = async (req, res) => {
 }
 
 //===========================*LOGIN USER *=========================
+
 const loginForm = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -194,7 +192,7 @@ const loginForm = async (req, res) => {
     }
 
     // compare password
-    const isMatched = await bcrpytjs.compare(password, foundUser.hashPassword)
+    const isMatched = await bcrypt.compare(password, foundUser.hashPassword)
 
     if (!isMatched) {
       return res.status(401).json({

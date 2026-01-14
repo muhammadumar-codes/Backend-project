@@ -1,7 +1,7 @@
 {
   "name": "Backend",
   "version": "1.0.0",
-  "description": "First Backend Project",
+  "description": "Backend Project",
   "main": "server.js",
   "author": "Muhammad Umar",
   "license": "MIT",

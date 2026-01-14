@@ -1,38 +1,45 @@
 const express = require('express')
 const router = express.Router()
 
-// imported from the user.controller
 const {
   allUsers,
   userById,
   createUser,
   updateUser,
+  loginForm,
   deleteUser,
   registrationForm,
 } = require('../controllers/userController')
 
-const { authMiddleware } = require('../middleware/user.middleware')
+//===========================*MIDDLE WARE*=========================
+const authMiddleware = require('../middleware/user.middleware')
 
-// ===*PUBLIC ROUTE*===
+//===========================*PUBLIC ROUTE*=========================
 
+// REGISTER
+router.post('/register', registrationForm)
+
+// LOGIN
+router.post('/login', loginForm)
+
+// GET ALL USERS
 router.get('/', allUsers)
 
-// ===*PROTECTED ROUTE*===
+//===========================*PROTECTED ROUTE *=========================
 
 // GET USER BY ID
-
 router.get('/:id', authMiddleware, userById)
 
-//CREATE USER
+console.log(authMiddleware, userById)
+
+// CREATE USER
 router.post('/', authMiddleware, createUser)
 
-// REGISTER USER
-router.post('/register', authMiddleware, registrationForm)
-
-//UPDATE USER
+// UPDATE USER
 router.put('/:id', authMiddleware, updateUser)
 
 // DELETE USER
 router.delete('/:id', authMiddleware, deleteUser)
 
+//===========================*EXPORT ROUTER *=========================
 module.exports = router
