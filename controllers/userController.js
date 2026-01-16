@@ -1,6 +1,8 @@
-const { users, registerUsers } = require('../data/users')
-
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+// ===*Users And Registers From The Data File *===
+const { users, registerUsers, loginUser } = require('../data/users')
 
 // ===*GET ALL USERS*===
 
@@ -36,7 +38,7 @@ const userById = (req, res) => {
 const createUser = (req, res) => {
   const { name, brand } = req.body
 
-  // Validation
+  // ===*Validation*===
   if (!name || !brand) {
     return res.status(400).json({
       success: false,
@@ -109,8 +111,7 @@ const deleteUser = (req, res) => {
   })
 }
 
-// ===*REGISTER USER*===
-
+//===========================*REGISTER USERS *=========================
 const registrationForm = async (req, res) => {
   try {
     const { name, email, password } = req.body
@@ -140,7 +141,7 @@ const registrationForm = async (req, res) => {
     // ===*NEW USERS*===
 
     const newUser = {
-      id: users.length + 1,
+      id: registerUsers.length + 1,
       name,
       email,
       hashPassword,
@@ -155,7 +156,6 @@ const registrationForm = async (req, res) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
-        password: newUser.hashPassword,
       },
     })
 
@@ -168,15 +168,64 @@ const registrationForm = async (req, res) => {
   }
 }
 
-// ===*LOGIN USER *===
+//===========================*LOGIN USER *=========================
 
-const loginForm = (req, res) => {
-  const { email, password } = req.body
+const loginForm = async (req, res) => {
+  try {
+    const { email, password } = req.body
 
-  if (!email || !password) {
-    res.status(404).json({
+    if (!email || !password) {
+      return res.status(400).json({
+        isSuccess: false,
+        message: 'Email and Password are required',
+      })
+    }
+
+    // find registered user
+    const foundUser = registerUsers.find((item) => item.email === email)
+
+    if (!foundUser) {
+      return res.status(404).json({
+        isSuccess: false,
+        message: 'User not found',
+      })
+    }
+
+    // compare password
+    const isMatched = await bcrypt.compare(password, foundUser.hashPassword)
+
+    if (!isMatched) {
+      return res.status(401).json({
+        isSuccess: false,
+        message: 'Invalid password',
+      })
+    }
+
+    //  JWT GENERATE
+    const token = jwt.sign(
+      {
+        id: foundUser.id,
+        email: foundUser.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    )
+
+    // success
+    res.status(200).json({
+      isSuccess: true,
+      message: 'Login successful',
+      user: {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email,
+        token,
+      },
+    })
+  } catch (error) {
+    res.status(500).json({
       isSuccess: false,
-      message: 'Email And  Password is Required',
+      message: 'Server error',
     })
   }
 }
